@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using stackoverflow_recommendation_system.Models;
+using stackoverflow_recommendation_system.Services;
 using System.Diagnostics;
 
 namespace stackoverflow_recommendation_system.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly SearchResultService _searchResultService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(SearchResultService searchResultService)
         {
-            _logger = logger;
+            this._searchResultService = searchResultService;
         }
 
         public IActionResult Index()
@@ -27,6 +28,12 @@ namespace stackoverflow_recommendation_system.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public async Task<IActionResult> Search(string searchKey, int pageNumber)
+        {
+            var users = await this._searchResultService.GetSearchResults(searchKey, pageNumber);
+            return Ok(users);
         }
     }
 }
