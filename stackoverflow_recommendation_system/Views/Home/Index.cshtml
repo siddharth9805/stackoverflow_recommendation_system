@@ -1,8 +1,36 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<script src="lib/jquery/dist/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script type="text/javascript">
+        // Create connection
+        var connection = new signalR.HubConnectionBuilder().withUrl("/notificationHub").build();
+    
+        // Start the connection
+        connection.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+        
+        toastr.options = {
+            positionClass: 'toast-top-right',
+            timeOut: 5000,
+            extendedTimeOut: 2000,
+            // Add any additional options here
+        };
+    
+        // Listen for messages
+        connection.on("ReceiveMessage", (user, message) => {
+            console.log(`${user}: ${message}`)
+            toastr.info(`${user}: ${message}`);
+        });
+</script>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<p> @ViewBag.Message</p>
+
+<div id="data-container" class="container text-center">
+    
 </div>
+<div id="loading" style=" display:none;">Loading more...</div>
+
+
