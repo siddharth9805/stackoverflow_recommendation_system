@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using stackoverflow_recommendation_system.Models;
 using stackoverflow_recommendation_system.Services;
 using System.Diagnostics;
+using Microsoft.Data.SqlClient;
+using Dapper;
+using System.Data.SqlClient;
 
 namespace stackoverflow_recommendation_system.Controllers
 {
@@ -13,9 +16,38 @@ namespace stackoverflow_recommendation_system.Controllers
         {
             this._searchResultService = searchResultService;
         }
-
-        public IActionResult Index()
+        
+        [HttpPost]
+        public ActionResult SubmitForm(search_prompt search)
         {
+            // You can now access the form data through the `person` object.
+            // For example:
+            ViewBag.Message = $"Search: {search.searchQuery}";
+            return View("Index");
+        }
+        
+        [HttpGet]
+        public ActionResult FetchData(int pageNumber)
+        {
+            string? connectionString = configuration.GetConnectionString("DefaultConnection");
+            if (connectionString == null)
+            {
+                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            }
+
+            int pageSize = 10; // Set the number of records per page
+            using (var db = new SqlConnection(connectionString))
+            {
+                var offset = pageSize * (pageNumber - 1);
+                var sql = @"SELECT * FROM Badges ORDER BY Id OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
+                var data = db.Query<dynamic>(sql, new { Offset = offset, PageSize = pageSize }).ToList();
+                return Json(data);
+            }
+        }
+        
+        
+        public IActionResult Index()
+        {   
             return View();
         }
 
